@@ -15,10 +15,10 @@
 
 package core.com.qiniu.handler;
 
-import com.amazonaws.Request;
-import com.amazonaws.Response;
-import com.amazonaws.util.AWSRequestMetrics;
-import com.amazonaws.util.TimingInfo;
+import core.com.qiniu.Request;
+import core.com.qiniu.Response;
+import core.com.qiniu.util.AWSRequestMetrics;
+import core.com.qiniu.util.TimingInfo;
 
 /**
  * Internal class used to adapt a request handler that implements the deprecated

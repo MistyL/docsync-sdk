@@ -15,14 +15,91 @@
 
 package s3.com.qiniu.services.s3;
 
-import android.graphics.Region;
+import core.com.qiniu.HttpMethod;
+import s3.com.qiniu.services.s3.model.AbortMultipartUploadRequest;
+import s3.com.qiniu.services.s3.model.BucketPolicy;
+import s3.com.qiniu.services.s3.model.CompleteMultipartUploadRequest;
+import s3.com.qiniu.services.s3.model.CopyObjectRequest;
+import s3.com.qiniu.services.s3.model.CopyPartRequest;
+import s3.com.qiniu.services.s3.model.CopyPartResult;
+import s3.com.qiniu.services.s3.model.DeleteBucketCrossOriginConfigurationRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketLifecycleConfigurationRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketPolicyRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketReplicationConfigurationRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketTaggingConfigurationRequest;
+import s3.com.qiniu.services.s3.model.DeleteBucketWebsiteConfigurationRequest;
+import s3.com.qiniu.services.s3.model.DeleteObjectRequest;
+import s3.com.qiniu.services.s3.model.DeleteObjectsRequest;
+import s3.com.qiniu.services.s3.model.GeneratePresignedUrlRequest;
+import s3.com.qiniu.services.s3.model.GetBucketAccelerateConfigurationRequest;
+import s3.com.qiniu.services.s3.model.GetBucketAclRequest;
+import s3.com.qiniu.services.s3.model.GetBucketPolicyRequest;
+import s3.com.qiniu.services.s3.model.GetBucketReplicationConfigurationRequest;
+import s3.com.qiniu.services.s3.model.GetBucketWebsiteConfigurationRequest;
+import s3.com.qiniu.services.s3.model.GetObjectMetadataRequest;
+import s3.com.qiniu.services.s3.model.HeadBucketRequest;
+import s3.com.qiniu.services.s3.model.HeadBucketResult;
+import s3.com.qiniu.services.s3.model.InitiateMultipartUploadRequest;
+import s3.com.qiniu.services.s3.model.ListMultipartUploadsRequest;
+import s3.com.qiniu.services.s3.model.ListPartsRequest;
+import s3.com.qiniu.services.s3.model.PutObjectResult;
+import s3.com.qiniu.services.s3.model.Region;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.acl.Owner;
 import java.util.Date;
 import java.util.List;
+import s3.com.qiniu.services.s3.model.Owner;
+
+import core.com.qiniu.AmazonClientException;
+import core.com.qiniu.AmazonServiceException;
+import core.com.qiniu.AmazonWebServiceRequest;
+import s3.com.qiniu.S3ClientOptions;
+import s3.com.qiniu.services.s3.model.AccessControlList;
+import s3.com.qiniu.services.s3.model.Bucket;
+import s3.com.qiniu.services.s3.model.BucketAccelerateConfiguration;
+import s3.com.qiniu.services.s3.model.BucketCrossOriginConfiguration;
+import s3.com.qiniu.services.s3.model.BucketLifecycleConfiguration;
+import s3.com.qiniu.services.s3.model.BucketLoggingConfiguration;
+import s3.com.qiniu.services.s3.model.BucketNotificationConfiguration;
+import s3.com.qiniu.services.s3.model.BucketReplicationConfiguration;
+import s3.com.qiniu.services.s3.model.BucketTaggingConfiguration;
+import s3.com.qiniu.services.s3.model.BucketVersioningConfiguration;
+import s3.com.qiniu.services.s3.model.BucketWebsiteConfiguration;
+import s3.com.qiniu.services.s3.model.CannedAccessControlList;
+import s3.com.qiniu.services.s3.model.CompleteMultipartUploadResult;
+import s3.com.qiniu.services.s3.model.CopyObjectResult;
+import s3.com.qiniu.services.s3.model.CreateBucketRequest;
+import s3.com.qiniu.services.s3.model.DeleteObjectsResult;
+import s3.com.qiniu.services.s3.model.GetBucketLocationRequest;
+import s3.com.qiniu.services.s3.model.GetObjectRequest;
+import s3.com.qiniu.services.s3.model.InitiateMultipartUploadResult;
+import s3.com.qiniu.services.s3.model.ListBucketsRequest;
+import s3.com.qiniu.services.s3.model.ListObjectsRequest;
+import s3.com.qiniu.services.s3.model.ListObjectsV2Request;
+import s3.com.qiniu.services.s3.model.ListObjectsV2Result;
+import s3.com.qiniu.services.s3.model.MultipartUploadListing;
+import s3.com.qiniu.services.s3.model.ObjectListing;
+import s3.com.qiniu.services.s3.model.ObjectMetadata;
+import s3.com.qiniu.services.s3.model.PartListing;
+import s3.com.qiniu.services.s3.model.PutObjectRequest;
+import s3.com.qiniu.services.s3.model.RestoreObjectRequest;
+import s3.com.qiniu.services.s3.model.S3Object;
+import s3.com.qiniu.services.s3.model.SetBucketAccelerateConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketAclRequest;
+import s3.com.qiniu.services.s3.model.SetBucketCrossOriginConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketLifecycleConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketLoggingConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketNotificationConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketPolicyRequest;
+import s3.com.qiniu.services.s3.model.SetBucketReplicationConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketTaggingConfigurationRequest;
+import s3.com.qiniu.services.s3.model.SetBucketWebsiteConfigurationRequest;
+import s3.com.qiniu.services.s3.model.StorageClass;
+import s3.com.qiniu.services.s3.model.UploadPartRequest;
+import s3.com.qiniu.services.s3.model.UploadPartResult;
 
 /**
  * <p>
@@ -56,7 +133,7 @@ public interface AmazonS3 {
      * Pass the endpoint (e.g. "s3.amazonaws.com") or a full URL, including the
      * protocol (e.g. "https://s3.amazonaws.com"). If the protocol is not
      * specified, the protocol from this client's
-     * {@link com.amazonaws.ClientConfiguration} is used.
+     * {@link core.com.qiniu.ClientConfiguration} is used.
      * </p>
      *
      * @param endpoint The endpoint (e.g. "s3.amazonaws.com") or the full URL,
@@ -79,20 +156,20 @@ public interface AmazonS3 {
      * transit or retrying.</b>
      * <p>
      * By default, all service endpoints in all regions use the https protocol.
-     * To use http instead, specify it in the {@link ClientConfiguration}
+     * To use http instead, specify it in the {@link core.com.qiniu.ClientConfiguration}
      * supplied at construction.
      *
      * @param region The region this client will communicate with. See
-     *            {@link com.amazonaws.regions.Region#getRegion(com.amazonaws.regions.Regions)}
+     *            {@link core.com.qiniu.regions.Region#getRegion(core.com.qiniu.regions.Regions)}
      *            for accessing a given region.
      * @throws IllegalArgumentException If the given region is null,
      *             or if this service isn't available in the given region. See
-     *             {@link com.amazonaws.regions.Region#isServiceSupported(String)}
-     * @see com.amazonaws.regions.Region#getRegion(com.amazonaws.regions.Regions)
-     * @see com.amazonaws.regions.Region#createClient(Class,
-     *      com.amazonaws.auth.AWSCredentialsProvider, ClientConfiguration)
+     *             {@link core.com.qiniu.regions.Region#isServiceSupported(String)}
+     * @see core.com.qiniu.regions.Region#getRegion(core.com.qiniu.regions.Regions)
+     * @see core.com.qiniu.regions.Region#createClient(Class,
+     *      core.com.qiniu.auth.AWSCredentialsProvider, core.com.qiniu.ClientConfiguration)
      */
-    public void setRegion(com.amazonaws.regions.Region region) throws IllegalArgumentException;
+    public void setRegion(core.com.qiniu.regions.Region region) throws IllegalArgumentException;
 
     /**
      * <p>
@@ -339,296 +416,6 @@ public interface AmazonS3 {
      * @see AmazonS3Client#listObjects(ListObjectsRequest)
      */
     public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Returns a list of summary information about the versions in the specified
-     * bucket.
-     * </p>
-     * <p>
-     * The returned version summaries are ordered first by key and then by
-     * version. Keys are sorted lexicographically (alphabetically) while
-     * versions are sorted from most recent to least recent. Both versions with
-     * data and delete markers are included in the results.
-     * </p>
-     * <p>
-     * Because buckets can contain a virtually unlimited number of versions, the
-     * complete results of a list query can be extremely large. To manage large
-     * result sets, Amazon S3 uses pagination to split them into multiple
-     * responses. Always check the {@link VersionListing#isTruncated()} method
-     * to determine if the returned listing is complete or if additional calls
-     * are needed to get more results. Callers are encouraged to use
-     * {@link AmazonS3#listNextBatchOfVersions(VersionListing)} as an easy way
-     * to get the next page of results.
-     * </p>
-     * <p>
-     * For more information about enabling versioning for a bucket, see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     *
-     * @param bucketName The name of the Amazon S3 bucket whose versions are to
-     *            be listed.
-     * @param prefix An optional parameter restricting the response to keys
-     *            beginning with the specified prefix. Use prefixes to separate
-     *            a bucket into different sets of keys, similar to how a file
-     *            system organizes files into directories.
-     * @return A listing of the versions in the specified bucket, along with any
-     *         other associated information and original request parameters.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3Client#listVersions(ListVersionsRequest)
-     * @see AmazonS3Client#listVersions(String, String, String, String, String,
-     *      Integer)
-     */
-    public VersionListing listVersions(String bucketName, String prefix)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Provides an easy way to continue a truncated {@link VersionListing} and
-     * retrieve the next page of results.
-     * </p>
-     * <p>
-     * Obtain the initial <code>VersionListing</code> from one of the
-     * <code>listVersions</code> methods. If the result is truncated (indicated
-     * when {@link ObjectListing#isTruncated()} returns <code>true</code>), pass
-     * the <code>VersionListing</code> back into this method in order to
-     * retrieve the next page of results. From there, continue using this method
-     * to retrieve more results until the returned <code>VersionListing</code>
-     * indicates that it is not truncated.
-     * </p>
-     * <p>
-     * For more information about enabling versioning for a bucket, see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     *
-     * @param previousVersionListing The previous truncated
-     *            <code>VersionListing</code>. If a non-truncated
-     *            <code>VersionListing</code> is passed in, an empty
-     *            <code>VersionListing</code> is returned without ever
-     *            contacting Amazon S3.
-     * @return The next set of <code>VersionListing</code> results, beginning
-     *         immediately after the last result in the specified previous
-     *         <code>VersionListing</code>.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3Client#listVersions(String, String)
-     * @see AmazonS3Client#listVersions(ListVersionsRequest)
-     * @see AmazonS3Client#listVersions(String, String, String, String, String,
-     *      Integer)
-     */
-    public VersionListing listNextBatchOfVersions(VersionListing previousVersionListing)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Returns a list of summary information about the versions in the specified
-     * bucket.
-     * </p>
-     * <p>
-     * The returned version summaries are ordered first by key and then by
-     * version. Keys are sorted lexicographically (alphabetically) and versions
-     * are sorted from most recent to least recent. Versions with data and
-     * delete markers are included in the results.
-     * </p>
-     * <p>
-     * Because buckets can contain a virtually unlimited number of versions, the
-     * complete results of a list query can be extremely large. To manage large
-     * result sets, Amazon S3 uses pagination to split them into multiple
-     * responses. Always check the {@link VersionListing#isTruncated()} method
-     * to determine if the returned listing is complete or if additional calls
-     * are needed to get more results. Callers are encouraged to use
-     * {@link AmazonS3#listNextBatchOfVersions(VersionListing)} as an easy way
-     * to get the next page of results.
-     * </p>
-     * <p>
-     * The <code>keyMarker</code> and <code>versionIdMarker</code> parameters
-     * allow callers to specify where to start the version listing.
-     * </p>
-     * <p>
-     * The <code>delimiter</code> parameter allows groups of keys that share a
-     * delimiter-terminated prefix to be included in the returned listing. This
-     * allows applications to organize and browse their keys hierarchically,
-     * much like how a file system organizes files into directories. These
-     * common prefixes can be retrieved by calling the
-     * {@link VersionListing#getCommonPrefixes()} method.
-     * </p>
-     * <p>
-     * For example, consider a bucket that contains the following keys:
-     * <ul>
-     * <li>"foo/bar/baz"</li>
-     * <li>"foo/bar/bash"</li>
-     * <li>"foo/bar/bang"</li>
-     * <li>"foo/boo"</li>
-     * </ul>
-     * If calling <code>listVersions</code> with a <code>prefix</code> value of
-     * "foo/" and a <code>delimiter</code> value of "/" on this bucket, a
-     * <code>VersionListing</code> is returned that contains:
-     * <ul>
-     * <li>all the versions for one key ("foo/boo")</li>
-     * <li>one entry in the common prefixes list ("foo/bar/")</li>
-     * </ul>
-     * </p>
-     * <p>
-     * To see deeper into the virtual hierarchy, make another call to
-     * <code>listVersions</code> setting the prefix parameter to any interesting
-     * common prefix to list the individual versions under that prefix.
-     * </p>
-     * <p>
-     * For more information about enabling versioning for a bucket, see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     *
-     * @param bucketName The name of the Amazon S3 bucket whose versions are to
-     *            be listed.
-     * @param prefix An optional parameter restricting the response to keys that
-     *            begin with the specified prefix. Use prefixes to separate a
-     *            bucket into different sets of keys, similar to how a file
-     *            system organizes files into directories.
-     * @param keyMarker Optional parameter indicating where in the sorted list
-     *            of all versions in the specified bucket to begin returning
-     *            results. Results are always ordered first lexicographically
-     *            (i.e. alphabetically) and then from most recent version to
-     *            least recent version. If a keyMarker is used without a
-     *            versionIdMarker, results begin immediately after that key's
-     *            last version. When a keyMarker is used with a versionIdMarker,
-     *            results begin immediately after the version with the specified
-     *            key and version ID.
-     *            <p>
-     *            This enables pagination; to get the next page of results use
-     *            the next key marker and next version ID marker (from
-     *            {@link VersionListing#getNextKeyMarker()} and
-     *            {@link VersionListing#getNextVersionIdMarker()}) as the
-     *            markers for the next request to list versions, or use the
-     *            convenience method
-     *            {@link AmazonS3#listNextBatchOfVersions(VersionListing)}
-     * @param versionIdMarker Optional parameter indicating where in the sorted
-     *            list of all versions in the specified bucket to begin
-     *            returning results. Results are always ordered first
-     *            lexicographically (i.e. alphabetically) and then from most
-     *            recent version to least recent version. A keyMarker must be
-     *            specified when specifying a versionIdMarker. Results begin
-     *            immediately after the version with the specified key and
-     *            version ID.
-     *            <p>
-     *            This enables pagination; to get the next page of results use
-     *            the next key marker and next version ID marker (from
-     *            {@link VersionListing#getNextKeyMarker()} and
-     *            {@link VersionListing#getNextVersionIdMarker()}) as the
-     *            markers for the next request to list versions, or use the
-     *            convenience method
-     *            {@link AmazonS3#listNextBatchOfVersions(VersionListing)}
-     * @param delimiter Optional parameter that causes keys that contain the
-     *            same string between the prefix and the first occurrence of the
-     *            delimiter to be rolled up into a single result element in the
-     *            {@link VersionListing#getCommonPrefixes()} list. These
-     *            rolled-up keys are not returned elsewhere in the response. The
-     *            most commonly used delimiter is "/", which simulates a
-     *            hierarchical organization similar to a file system directory
-     *            structure.
-     * @param maxResults Optional parameter indicating the maximum number of
-     *            results to include in the response. Amazon S3 might return
-     *            fewer than this, but will not return more. Even if maxKeys is
-     *            not specified, Amazon S3 will limit the number of results in
-     *            the response.
-     * @return A listing of the versions in the specified bucket, along with any
-     *         other associated information such as common prefixes (if a
-     *         delimiter was specified), the original request parameters, etc.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3Client#listVersions(String, String)
-     * @see AmazonS3Client#listVersions(ListVersionsRequest)
-     * @see AmazonS3Client#listNextBatchOfVersions(VersionListing)
-     */
-    public VersionListing listVersions(String bucketName, String prefix,
-                                       String keyMarker, String versionIdMarker, String delimiter, Integer maxResults)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Returns a list of summary information about the versions in the specified
-     * bucket.
-     * </p>
-     * <p>
-     * The returned version summaries are ordered first by key and then by
-     * version. Keys are sorted lexicographically (alphabetically) and versions
-     * are sorted from most recent to least recent. Versions with data and
-     * delete markers are included in the results.
-     * </p>
-     * <p>
-     * Because buckets can contain a virtually unlimited number of versions, the
-     * complete results of a list query can be extremely large. To manage large
-     * result sets, Amazon S3 uses pagination to split them into multiple
-     * responses. Always check the {@link VersionListing#isTruncated()} method
-     * to determine if the returned listing is complete or if additional calls
-     * are needed to get more results. Callers are encouraged to use
-     * {@link AmazonS3#listNextBatchOfVersions(VersionListing)} as an easy way
-     * to get the next page of results.
-     * </p>
-     * <p>
-     * The <code>keyMarker</code> and <code>versionIdMarker</code> parameters
-     * allow callers to specify where to start the version listing.
-     * </p>
-     * <p>
-     * The <code>delimiter</code> parameter allows groups of keys that share a
-     * delimiter-terminated prefix to be included in the returned listing. This
-     * allows applications to organize and browse their keys hierarchically,
-     * much like how a file system organizes files into directories. These
-     * common prefixes can be retrieved by calling the
-     * {@link VersionListing#getCommonPrefixes()} method.
-     * </p>
-     * <p>
-     * For example, consider a bucket that contains the following keys:
-     * <ul>
-     * <li>"foo/bar/baz"</li>
-     * <li>"foo/bar/bash"</li>
-     * <li>"foo/bar/bang"</li>
-     * <li>"foo/boo"</li>
-     * </ul>
-     * If calling <code>listVersions</code> with a <code>prefix</code> value of
-     * "foo/" and a <code>delimiter</code> value of "/" on this bucket, a
-     * <code>VersionListing</code> is returned that contains:
-     * <ul>
-     * <li>all the versions for one key ("foo/boo")</li>
-     * <li>one entry in the common prefixes list ("foo/bar/")</li>
-     * </ul>
-     * </p>
-     * <p>
-     * To see deeper into the virtual hierarchy, make another call to
-     * <code>listVersions</code> setting the prefix parameter to any interesting
-     * common prefix to list the individual versions under that prefix.
-     * </p>
-     * <p>
-     * For more information about enabling versioning for a bucket, see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     *
-     * @param listVersionsRequest The request object containing all options for
-     *            listing the versions in a specified bucket.
-     * @return A listing of the versions in the specified bucket, along with any
-     *         other associated information such as common prefixes (if a
-     *         delimiter was specified), the original request parameters, etc.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3Client#listVersions(String, String)
-     * @see AmazonS3Client#listVersions(String, String, String, String, String,
-     *      Integer)
-     * @see AmazonS3Client#listNextBatchOfVersions(VersionListing)
-     */
-    public VersionListing listVersions(ListVersionsRequest listVersionsRequest)
             throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -981,9 +768,9 @@ public interface AmazonS3 {
      *             while making the request or handling the response.
      * @throws AmazonServiceException If any errors occurred in Amazon S3 while
      *             processing the request.
-     * @see com.amazonaws.services.s3.model.Region
+     * @see s3.com.qiniu.services.s3.model.Region
      */
-    public Bucket createBucket(String bucketName, Region region)
+    public Bucket createBucket(String bucketName, s3.com.qiniu.services.s3.model.Region region)
             throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -2041,76 +1828,6 @@ public interface AmazonS3 {
 
     /**
      * <p>
-     * Deletes a specific version of the specified object in the specified
-     * bucket. Once deleted, there is no method to restore or undelete an object
-     * version. This is the only way to permanently delete object versions that
-     * are protected by versioning.
-     * </p>
-     * <p>
-     * Deleting an object version is permanent and irreversible. It is a
-     * privileged operation that only the owner of the bucket containing the
-     * version can perform.
-     * </p>
-     * <p>
-     * Users can only delete a version of an object if versioning is enabled for
-     * the bucket. For more information about enabling versioning for a bucket,
-     * see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     * <p>
-     * If attempting to delete an object that does not exist, Amazon S3 will
-     * return a success message instead of an error message.
-     * </p>
-     *
-     * @param bucketName The name of the Amazon S3 bucket containing the object
-     *            to delete.
-     * @param key The key of the object to delete.
-     * @param versionId The version of the object to delete.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     */
-    public void deleteVersion(String bucketName, String key, String versionId)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Deletes a specific version of an object in the specified bucket. Once
-     * deleted, there is no method to restore or undelete an object version.
-     * This is the only way to permanently delete object versions that are
-     * protected by versioning.
-     * </p>
-     * <p>
-     * Deleting an object version is permanent and irreversible. It is a
-     * privileged operation that only the owner of the bucket containing the
-     * version can perform.
-     * </p>
-     * <p>
-     * Users can only delete a version of an object if versioning is enabled for
-     * the bucket. For more information about enabling versioning for a bucket,
-     * see
-     * {@link #setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)}
-     * .
-     * </p>
-     * <p>
-     * If attempting to delete an object that does not exist, Amazon S3 will
-     * return a success message instead of an error message.
-     * </p>
-     *
-     * @param deleteVersionRequest The request object containing all options for
-     *            deleting a specific version of an Amazon S3 object.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     */
-    public void deleteVersion(DeleteVersionRequest deleteVersionRequest)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
      * Gets the logging configuration for the specified bucket. The bucket
      * logging configuration object indicates if server access logging is
      * enabled the specified bucket, the destination bucket where server access
@@ -2166,114 +1883,6 @@ public interface AmazonS3 {
      */
     public void setBucketLoggingConfiguration(
             SetBucketLoggingConfigurationRequest setBucketLoggingConfigurationRequest)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Returns the versioning configuration for the specified bucket.
-     * </p>
-     * <p>
-     * A bucket's versioning configuration can be in one of three possible
-     * states:
-     * <ul>
-     * <li>{@link BucketVersioningConfiguration#OFF}
-     * <li>{@link BucketVersioningConfiguration#ENABLED}
-     * <li>{@link BucketVersioningConfiguration#SUSPENDED}
-     * </ul>
-     * </p>
-     * <p>
-     * By default, new buckets are in the
-     * {@link BucketVersioningConfiguration#OFF off} state. Once versioning is
-     * enabled for a bucket the status can never be reverted to
-     * {@link BucketVersioningConfiguration#OFF off}.
-     * </p>
-     * <p>
-     * The versioning configuration of a bucket has different implications for
-     * each operation performed on that bucket or for objects within that
-     * bucket. For example, when versioning is enabled a <code>PutObject</code>
-     * operation creates a unique object version-id for the object being
-     * uploaded. The The <code>PutObject</code> API guarantees that, if
-     * versioning is enabled for a bucket at the time of the request, the new
-     * object can only be permanently deleted using a <code>DeleteVersion</code>
-     * operation. It can never be overwritten. Additionally, the
-     * <code>PutObject</code> API guarantees that, if versioning is enabled for
-     * a bucket the request, no other object will be overwritten by that
-     * request. Refer to the documentation sections for each API for information
-     * on how versioning status affects the semantics of that particular API.
-     * </p>
-     * <p>
-     * Amazon S3 is eventually consistent. It can take time for the versioning
-     * status of a bucket to be propagated throughout the system.
-     * </p>
-     *
-     * @param bucketName The bucket whose versioning configuration will be
-     *            retrieved.
-     * @return The bucket versioning configuration for the specified bucket.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3#setBucketVersioningConfiguration(SetBucketVersioningConfigurationRequest)
-     */
-    public BucketVersioningConfiguration getBucketVersioningConfiguration(String bucketName)
-            throws AmazonClientException, AmazonServiceException;
-
-    /**
-     * <p>
-     * Sets the versioning configuration for the specified bucket.
-     * </p>
-     * <p>
-     * A bucket's versioning configuration can be in one of three possible
-     * states:
-     * <ul>
-     * <li>{@link BucketVersioningConfiguration#OFF}
-     * <li>{@link BucketVersioningConfiguration#ENABLED}
-     * <li>{@link BucketVersioningConfiguration#SUSPENDED}
-     * </ul>
-     * </p>
-     * <p>
-     * By default, new buckets are in the
-     * {@link BucketVersioningConfiguration#OFF off} state. Once versioning is
-     * enabled for a bucket the status can never be reverted to
-     * {@link BucketVersioningConfiguration#OFF off}.
-     * </p>
-     * <p>
-     * Objects created before versioning was enabled or when versioning is
-     * suspended will be given the default <code>null</code> version ID (see
-     * {@link Constants#NULL_VERSION_ID}). Note that the <code>null</code>
-     * version ID is a valid version ID and is not the same as not having a
-     * version ID.
-     * </p>
-     * <p>
-     * The versioning configuration of a bucket has different implications for
-     * each operation performed on that bucket or for objects within that
-     * bucket. For example, when versioning is enabled a <code>PutObject</code>
-     * operation creates a unique object version-id for the object being
-     * uploaded. The The <code>PutObject</code> API guarantees that, if
-     * versioning is enabled for a bucket at the time of the request, the new
-     * object can only be permanently deleted using a <code>DeleteVersion</code>
-     * operation. It can never be overwritten. Additionally, the
-     * <code>PutObject</code> API guarantees that, if versioning is enabled for
-     * a bucket the request, no other object will be overwritten by that
-     * request. Refer to the documentation sections for each API for information
-     * on how versioning status affects the semantics of that particular API.
-     * </p>
-     * <p>
-     * Amazon S3 is eventually consistent. It can take time for the versioning
-     * status of a bucket to be propagated throughout the system.
-     * </p>
-     *
-     * @param setBucketVersioningConfigurationRequest The request object
-     *            containing all options for setting the bucket versioning
-     *            configuration.
-     * @throws AmazonClientException If any errors are encountered in the client
-     *             while making the request or handling the response.
-     * @throws AmazonServiceException If any errors occurred in Amazon S3 while
-     *             processing the request.
-     * @see AmazonS3#getBucketVersioningConfiguration(String)
-     */
-    public void setBucketVersioningConfiguration(
-            SetBucketVersioningConfigurationRequest setBucketVersioningConfigurationRequest)
             throws AmazonClientException, AmazonServiceException;
 
     /**
